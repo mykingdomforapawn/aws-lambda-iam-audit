@@ -53,7 +53,7 @@ def lambda_handler(event, context):
         result['Users'].append(
             {
                 'UserName': user_name,
-                'PoliciesWithAsterisk': statements_with_asterisk
+                'StatementsWithAsterisk': statements_with_asterisk
             }
         )
     

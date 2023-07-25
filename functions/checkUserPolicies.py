@@ -49,14 +49,13 @@ def lambda_handler(event, context):
                         }
                     )
         
-        # append user and relevant policies to result structure
-        if statements_with_asterisk:
-            result['Users'].append(
-                {
-                    'UserName': user_name,
-                    'Policies': statements_with_asterisk
-                }
-            )
+        # append user and relevant policies to result structure 
+        result['Users'].append(
+            {
+                'UserName': user_name,
+                'PoliciesWithAsterisk': statements_with_asterisk
+            }
+        )
     
     return result
     

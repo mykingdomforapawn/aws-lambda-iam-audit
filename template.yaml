@@ -16,4 +16,11 @@ Resources:
       Timeout: 10
       Policies:
       - IAMReadOnlyAccess
-  
+  checkRolePolicies:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: functions/checkRolePolicies.lambda_handler
+      Runtime: python3.9
+      Timeout: 10
+      Policies:
+      - IAMReadOnlyAccess

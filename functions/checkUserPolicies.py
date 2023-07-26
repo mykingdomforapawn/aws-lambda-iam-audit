@@ -63,9 +63,9 @@ def lambda_handler(event, context):
 def asterisk_in_statement(statement):
         
     # Check if an asterisk is present in actions or resource field of the statement
-    if 'Action' in statement and '*' in statement['Action']:
+    if 'Action' in statement and 'Allow' in statement['Effect'] and '*' in statement['Action']:
         return True
-    elif 'Resource' in statement and '*' in statement['Resource']:
+    elif 'Resource' in statement and 'Allow' in statement['Effect'] and '*' in statement['Resource']:
         return True
 
     return False

@@ -4,3 +4,7 @@
 # Serverless Application Model
 .aws-sam/
 samconfig.toml
+
+# Diagrams
+.$diagram.drawio.dtmp
+.$diagram.drawio.bkp

@@ -1,11 +1,9 @@
 import boto3
-from datetime import datetime
 
 def lambda_handler(event, context):
     
     # Create result structure
     result = {
-        'ExecutionDate': datetime.now().isoformat(timespec='seconds'),
         'Groups':[]
     }
     
@@ -19,8 +17,9 @@ def lambda_handler(event, context):
     # Loop through groups
     for group in groups:
         group_name = group['GroupName']
-        statements_with_asterisk = []
         users_in_group = []
+        AWS_policies = []
+        customer_policies = []
         
         # Get all policies attached to the group
         response = iam_client.list_attached_group_policies(GroupName=group_name)
@@ -30,25 +29,34 @@ def lambda_handler(event, context):
         for policy in attached_policies:
             policy_arn = policy['PolicyArn']
             
-            # Get the details of the policy
-            response = iam_client.get_policy(PolicyArn=policy_arn)
-            policy_version_arn = response['Policy']['DefaultVersionId']
+            # Check if customer policy
+            if not policy_arn.startswith('arn:aws:iam::aws:policy/'):
             
-            response = iam_client.get_policy_version(PolicyArn=policy_arn, VersionId=policy_version_arn)
-            policy_document = response['PolicyVersion']['Document']
-            
-            # Loop through statements of the policy document
-            statements = policy_document['Statement']
-            for statement in statements:
+                # Get the details of the policy
+                response = iam_client.get_policy(PolicyArn=policy_arn)
+                policy_version_arn = response['Policy']['DefaultVersionId']
                 
-                # Check the statement for asterisks in either the resource or action field
-                if asterisk_in_statement(statement):
-                    statements_with_asterisk.append(
-                        {
-                            'PolicyArn': policy_arn,
-                            'Statement': statement
-                        }
-                    )
+                response = iam_client.get_policy_version(PolicyArn=policy_arn, VersionId=policy_version_arn)
+                policy_document = response['PolicyVersion']['Document']
+                
+                # Loop through statements of the policy document
+                statements = policy_document['Statement']
+                for statement in statements:
+                    
+                    # Check the statement for asterisks in either the resource or action field
+                    if asterisk_in_statement(statement):
+                        customer_policies.append(
+                            {
+                                'ARN': policy_arn,
+                                'StatementWithAsterisk': statement
+                            }
+                        )
+                        
+            # Check if AWS policy
+            else:
+                AWS_policies.append({
+                                'ARN': policy_arn
+                            })
                     
         # Get users from the group
         response = iam_client.get_group(GroupName=group_name)
@@ -63,7 +71,8 @@ def lambda_handler(event, context):
             {
                 'GroupName': group_name,
                 'UsersInGroup': users_in_group,
-                'StatementsWithAsterisk': statements_with_asterisk
+                'AWSPolicies': AWS_policies,
+                'CustomerPoliciesWithAsterisk': customer_policies
             }
         )
     
